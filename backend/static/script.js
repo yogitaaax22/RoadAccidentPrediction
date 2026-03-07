@@ -56,33 +56,40 @@ marker = L.marker([lat,lon]).addTo(map)
 }
 
 
-function predictRisk(){
-    let lat = document.getElementById("lat").value
-    let lon = document.getElementById("lon").value
+function predictRisk() {
+    console.log("Predict button clicked!"); // <--- ADD THIS
+    let lat = document.getElementById("lat").value;
+    let lon = document.getElementById("lon").value;
 
-    document.getElementById("risk").innerHTML = "Predicting..."
+    if(!lat || !lon) {
+        alert("Please select a location first!");
+        return;
+    }
 
-    fetch("/predict",{
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json"
+    document.getElementById("risk").innerHTML = "Predicting...";
+
+    fetch("/predict", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
         },
-        body:JSON.stringify({
+        body: JSON.stringify({
             latitude: parseFloat(lat),
             longitude: parseFloat(lon)
         })
     })
-    .then(res=>res.json())
-    .then(data=>{
-        // CHANGED: Match the key 'risk_level' from your Python code
-        document.getElementById("risk").innerHTML = data.risk_level;
-        
-        // NOTE: Your current app.py doesn't send a 'solution' key yet.
-        // You might want to add that to your Python return or just show the risk.
-        document.getElementById("solution").innerHTML = "Drive safely in this area."; 
+    .then(res => {
+        console.log("Response status:", res.status); // <--- ADD THIS
+        return res.json();
+    })
+    .then(data => {
+        console.log("Data received:", data); // <--- ADD THIS
+        // Use 'risk_level' to match your Python JSON key
+        document.getElementById("risk").innerHTML = data.risk_level || data.risk || "Unknown";
     })
     .catch(err => {
-        console.error("Error:", err);
-        document.getElementById("risk").innerHTML = "Error predicting risk.";
+        console.error("Fetch Error:", err);
+        document.getElementById("risk").innerHTML = "Error: Check Console";
     });
 }
+    
