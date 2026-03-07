@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import joblib
 import pandas as pd
 import numpy as np
@@ -137,7 +137,8 @@ def predict():
 
 @app.route("/")
 def home():
-    return "Accident Risk Prediction API Running"
+    
+    return render_template("index.html")
 
 
 if __name__ == "__main__":
