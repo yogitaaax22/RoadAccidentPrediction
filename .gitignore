@@ -1,0 +1,23 @@
+# Environment files (API keys, secrets)
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Jupyter / Notebook checkpoints (if any)
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# Optional: ignore large model files (if you want to manage separately)
+# backend/accident_risk_model.pkl
+# backend/model_columns.pkl
+# backend/label_encoder.pkl
+
+# Node modules (if frontend uses Node/React)
+frontend/node_modules/
