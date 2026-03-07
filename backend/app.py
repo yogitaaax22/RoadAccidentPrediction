@@ -15,108 +15,98 @@ model = joblib.load("accident_risk_model.pkl")
 model_columns = joblib.load("model_columns.pkl")
 label_encoder = joblib.load("label_encoder.pkl")
 
-# Weather API Key from Render Environment
 API_KEY = os.environ.get("API_KEY")
 
-if not API_KEY:
-    raise ValueError("API_KEY not found. Please set it in your Render Environment Variables.")
+# ----------------------------
+# 2. Scenario Logic (The Bridge)
+# ----------------------------
+def get_scenario_ratios(highway_tag, urban_rural, speed):
+    """
+    Translates real-world road types into the specific ratios 
+    your model saw during training.
+    """
+    # Baseline: Low Risk averages from your Colab stats
+    heavy, motor, ped, clusters = 0.712, 0.05, 0.07, 27
+
+    # Scenario: High-Speed Highways/Rural Links
+    if urban_rural == 2 or speed >= 70 or highway_tag in ["motorway", "trunk", "primary"]:
+        heavy = 0.73  # Slightly higher than average for danger signal
+        ped = 0.02    # Low pedestrian presence
+        clusters = 36 # Moving toward 'High Risk' cluster average (37.8)
+
+    # Scenario: Urban Residential/City Streets
+    elif highway_tag in ["residential", "living_street", "tertiary"]:
+        heavy = 0.45  # Lower heavy vehicle ratio for city streets
+        ped = 0.15    # Higher pedestrian presence
+        clusters = 26 # Keeping it near the 'Low Risk' average
+
+    return heavy, motor, ped, clusters
 
 # ----------------------------
-# 2. Real-Time Data Helpers
+# 3. Real-Time Data Fetching
 # ----------------------------
-
 def get_realtime_data(lat, lon):
-    """Fetches Weather (OWM) and Road Metadata (Overpass)."""
-    
-    # --- Part A: Weather & Light (OpenWeatherMap) ---
-    weather_code, is_night, road_surface = 1, 0, 1  # Defaults
+    # --- Weather & Light ---
+    weather_code, is_night, surface = 1, 0, 1
     weather_url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}"
-    
     try:
         w_res = requests.get(weather_url, timeout=5).json()
         main_weather = w_res["weather"][0]["main"]
-        
-        # Determine if it is night based on sunrise/sunset timestamps
         now = datetime.now().timestamp()
         is_night = 1 if (now < w_res['sys']['sunrise'] or now > w_res['sys']['sunset']) else 0
+        if main_weather in ["Rain", "Drizzle", "Thunderstorm", "Snow"]: surface = 2
         
-        # Infer Road Surface (Wet if raining/snowing)
-        if main_weather in ["Rain", "Drizzle", "Thunderstorm", "Snow"]:
-            road_surface = 2 
-        
-        # Map to your model's codes
-        weather_map = {"Clear": 1, "Clouds": 2, "Rain": 3, "Drizzle": 3, "Mist": 4, "Fog": 4}
+        weather_map = {"Clear": 1, "Clouds": 2, "Rain": 3, "Mist": 4}
         weather_code = weather_map.get(main_weather, 1)
-    except:
-        print("Weather API failed, using defaults.")
+    except: pass
 
-    # --- Part B: Road Metadata (Overpass API) ---
-    speed_limit, urban_rural, road_type = 40, 1, 1  # Defaults
+    # --- Road Metadata (Overpass) ---
+    speed, urban_rural, highway_tag = 40, 1, "residential"
     overpass_url = "http://overpass-api.de/api/interpreter"
-    overpass_query = f"""
-    [out:json];
-    way(around:50, {lat}, {lon})["highway"];
-    out tags;
-    """
+    overpass_query = f'[out:json];way(around:50, {lat}, {lon})["highway"];out tags;'
     try:
         o_res = requests.get(overpass_url, params={'data': overpass_query}, timeout=10).json()
         if o_res['elements']:
             tags = o_res['elements'][0]['tags']
-            # Get maxspeed or assign based on road category
+            highway_tag = tags.get("highway", "residential")
             speed_val = tags.get("maxspeed", "40")
-            speed_limit = int(''.join(filter(str.isdigit, speed_val))) if any(c.isdigit() for c in speed_val) else 40
-            
-            # Map Highway types to Urban (1) or Rural (2)
-            highway = tags.get("highway", "residential")
-            urban_rural = 2 if highway in ["motorway", "trunk", "primary"] else 1
-    except:
-        print("Overpass API failed, using defaults.")
+            speed = int(''.join(filter(str.isdigit, speed_val))) if any(c.isdigit() for c in speed_val) else 40
+            urban_rural = 2 if highway_tag in ["motorway", "trunk", "primary"] else 1
+    except: pass
 
-    return weather_code, is_night, road_surface, speed_limit, urban_rural, road_type
-
+    return weather_code, is_night, surface, speed, urban_rural, highway_tag
 
 # ----------------------------
-# 3. Feature Engineering
+# 4. Feature Engineering
 # ----------------------------
-
 def generate_features(lat, lon):
-    # 1. Get Real-time Data from APIs
-    weather, is_night, surface, speed, urban_rural, road_type = get_realtime_data(lat, lon)
+    # Fetch dynamic data
+    weather, is_night, surface, speed, urban_rural, highway_tag = get_realtime_data(lat, lon)
     
-    # 2. Use the Statistical Averages from your Colab output
-    # We use the High/Medium threshold to give the model a fair chance
-    heavy_ratio = 0.716    # High Risk avg was ~0.717
-    motorcycle_ratio = 0.05
-    pedestrian_ratio = 0.07
+    # Get Scenario Ratios based on the API results
+    heavy, motor, ped, clusters = get_scenario_ratios(highway_tag, urban_rural, speed)
     
-    # This is the most important fix: 
-    # Instead of '1', we use a base of 30 and add a little 'jitter' 
-    # based on speed to simulate density.
-    nearby_cluster = 33 if speed < 50 else 38 
-
-    # 3. Math & Logic
-    lat_lon_interaction = lat * lon
-    lat_squared = lat ** 2
-    lon_squared = lon ** 2
-    hour = datetime.now().hour
+    # Mathematical Transformations
+    now = datetime.now()
+    hour = now.hour
 
     data = {
         "Speed_limit": speed,
         "Urban_or_Rural_Area": urban_rural,
-        "Road_Type": road_type,
+        "Road_Type": 1, # Defaulting to Single Carriageway
         "Weather_Conditions": weather,
         "Light_Conditions": is_night,
         "Road_Surface_Conditions": surface,
         "Hour": hour,
         "latitude": lat,
         "longitude": lon,
-        "Heavy_Vehicle_Ratio": heavy_ratio,
-        "Motorcycle_Ratio": motorcycle_ratio,
-        "Pedestrian_Ratio": pedestrian_ratio,
-        "lat_lon_interaction": lat_lon_interaction,
-        "lat_squared": lat_squared,
-        "lon_squared": lon_squared,
-        "Nearby_Cluster_Count": nearby_cluster,
+        "Heavy_Vehicle_Ratio": heavy,
+        "Motorcycle_Ratio": motor,
+        "Pedestrian_Ratio": ped,
+        "lat_lon_interaction": lat * lon,
+        "lat_squared": lat ** 2,
+        "lon_squared": lon ** 2,
+        "Nearby_Cluster_Count": clusters,
         "Is_Night": is_night,
         "High_Speed": 1 if speed >= 60 else 0,
         "Speed_Urban": speed * urban_rural,
@@ -128,9 +118,8 @@ def generate_features(lat, lon):
     return df
 
 # ----------------------------
-# 4. Routes
+# 5. Routes
 # ----------------------------
-
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -138,19 +127,11 @@ def home():
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.json
-    lat = float(data["latitude"])
-    lon = float(data["longitude"])
-
-    # Generate the 20 features required by the XGBoost model
+    lat, lon = float(data["latitude"]), float(data["longitude"])
     features = generate_features(lat, lon)
-
-    # Make Prediction
     prediction = model.predict(features)
     risk = label_encoder.inverse_transform(prediction)[0]
-
-    return jsonify({
-        "risk_level": risk
-    })
+    return jsonify({"risk_level": risk})
 
 if __name__ == "__main__":
     app.run(debug=True)
