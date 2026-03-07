@@ -124,14 +124,34 @@ def generate_features(lat, lon):
 def home():
     return render_template("index.html")
 
+# @app.route("/predict", methods=["POST"])
+# def predict():
+#     data = request.json
+#     lat, lon = float(data["latitude"]), float(data["longitude"])
+#     features = generate_features(lat, lon)
+#     prediction = model.predict(features)
+#     risk = label_encoder.inverse_transform(prediction)[0]
+#     return jsonify({"risk_level": risk})
+
+# if __name__ == "__main__":
+#     app.run(debug=True)
+
 @app.route("/predict", methods=["POST"])
 def predict():
     data = request.json
     lat, lon = float(data["latitude"]), float(data["longitude"])
+    
+    # Debugging: Get the data first to see what's happening
+    weather, is_night, surface, speed, urban_rural, highway_tag = get_realtime_data(lat, lon)
+    heavy, motor, ped, clusters = get_scenario_ratios(highway_tag, urban_rural, speed)
+    
+    print(f"--- DEBUG DATA for {lat}, {lon} ---")
+    print(f"Road Tag: {highway_tag} | Speed: {speed}")
+    print(f"Assigned Clusters: {clusters} | Assigned Heavy Ratio: {heavy}")
+    
     features = generate_features(lat, lon)
     prediction = model.predict(features)
     risk = label_encoder.inverse_transform(prediction)[0]
+    
+    print(f"FINAL PREDICTION: {risk}")
     return jsonify({"risk_level": risk})
-
-if __name__ == "__main__":
-    app.run(debug=True)
