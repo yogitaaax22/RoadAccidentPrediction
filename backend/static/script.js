@@ -57,36 +57,32 @@ marker = L.marker([lat,lon]).addTo(map)
 
 
 function predictRisk(){
+    let lat = document.getElementById("lat").value
+    let lon = document.getElementById("lon").value
 
-let lat = document.getElementById("lat").value
-let lon = document.getElementById("lon").value
+    document.getElementById("risk").innerHTML = "Predicting..."
 
-document.getElementById("risk").innerHTML = "Predicting..."
-
-
-
-fetch("/predict",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-latitude: parseFloat(lat),
-longitude: parseFloat(lon)
-})
-
-})
-
-.then(res=>res.json())
-
-.then(data=>{
-
-document.getElementById("risk").innerHTML = data.risk
-document.getElementById("solution").innerHTML = data.solution
-
-})
-
+    fetch("/predict",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            latitude: parseFloat(lat),
+            longitude: parseFloat(lon)
+        })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+        // CHANGED: Match the key 'risk_level' from your Python code
+        document.getElementById("risk").innerHTML = data.risk_level;
+        
+        // NOTE: Your current app.py doesn't send a 'solution' key yet.
+        // You might want to add that to your Python return or just show the risk.
+        document.getElementById("solution").innerHTML = "Drive safely in this area."; 
+    })
+    .catch(err => {
+        console.error("Error:", err);
+        document.getElementById("risk").innerHTML = "Error predicting risk.";
+    });
 }
