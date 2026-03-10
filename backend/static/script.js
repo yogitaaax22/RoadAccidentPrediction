@@ -162,7 +162,8 @@ function predictRisk(){
     .then(res=>res.json())
     .then(data=>{
         document.getElementById("risk").innerHTML = data.risk_level;
-        document.getElementById("solution").innerHTML = "Drive safely in this area."; 
+        document.getElementById("weather").innerHTML = data.weather;
+        document.getElementById("solution").innerHTML = data.solution; 
     })
     .catch(err => {
         console.error("Error:", err);
