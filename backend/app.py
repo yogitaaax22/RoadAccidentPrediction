@@ -122,6 +122,16 @@ def map_road_type(highway):
 def generate_features(lat, lon):
     ist = pytz.timezone("Asia/Kolkata")
     now = datetime.now(ist)
+    hour = current_time.hour
+    if 5 <= hour < 12:
+        time_of_day = "Morning"
+    elif 12 <= hour < 17:
+        time_of_day = "Afternoon"
+    elif 17 <= hour < 21:
+        time_of_day = "Evening"
+    else:
+        time_of_day = "Night"
+    
     hour = now.hour
     is_night = 1 if (hour >= 20 or hour <= 5) else 0
     weather, weather_text = get_weather(lat, lon)
@@ -239,7 +249,7 @@ def predict():
     "solution": solution,
     "road_type": highway,
     "speed_limit": speed_limit,
-    "time": hour,
+    "time_of_day": time_of_day,
     "signals": nearby_cluster,
     "area": "Urban" if urban_rural == 1 else "Rural",
     "traffic": f"{traffic_level} ({traffic_reason})"
