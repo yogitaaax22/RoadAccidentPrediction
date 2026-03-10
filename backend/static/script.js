@@ -163,7 +163,13 @@ function predictRisk(){
     .then(data=>{
         document.getElementById("risk").innerHTML = data.risk_level;
         document.getElementById("weather").innerHTML = data.weather;
-        document.getElementById("factors").innerHTML = data.factors.join("<br>")
+        document.getElementById("factors").innerHTML =
+"Road Type: " + data.road_type + "<br>" +
+"Speed Limit: " + data.speed_limit + " km/h<br>" +
+"Time of Day: " + data.time + ":00<br>" +
+"Nearby Traffic Signals: " + data.signals + "<br>" +
+"Area Type: " + data.area;
+        
         document.getElementById("solution").innerHTML = data.solution; 
     })
     .catch(err => {
