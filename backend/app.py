@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 import requests
+import pytz
 
 app = Flask(__name__)
 
@@ -119,7 +120,8 @@ def map_road_type(highway):
 # Generate Model Features
 # ==========================
 def generate_features(lat, lon):
-    now = datetime.now()
+    ist = pytz.timezone("Asia/Kolkata")
+    now = datetime.now(ist)
     hour = now.hour
     is_night = 1 if (hour >= 20 or hour <= 5) else 0
     weather, weather_text = get_weather(lat, lon)
@@ -145,6 +147,24 @@ def generate_features(lat, lon):
     motorcycle_ratio = 0.5 if urban_rural == 1 else 0.3
     pedestrian_ratio = 0.3 if urban_rural == 1 else 0.1
     road_surface = 1
+
+traffic_score = heavy_ratio + motorcycle_ratio + pedestrian_ratio
+if traffic_score >= 0.9:
+    traffic_level = "High"
+elif traffic_score >= 0.6:
+    traffic_level = "Medium"
+else:
+    traffic_level = "Low"
+
+reason = []
+if pedestrian_ratio >= 0.3:
+    reason.append("more pedestrians")
+if motorcycle_ratio >= 0.5:
+    reason.append("many motorcycles")
+if heavy_ratio >= 0.3:
+    reason.append("heavy vehicles present")
+
+traffic_reason = ", ".join(reason) if reason else "normal traffic mix"
 
     # Derived Features
     lat_lon_interaction = lat * lon
@@ -180,8 +200,7 @@ def generate_features(lat, lon):
     df = pd.DataFrame([data])
     df = pd.get_dummies(df)
     df = df.reindex(columns=model_columns, fill_value=0)
-    return df, weather_text, highway, speed_limit, hour, nearby_cluster, urban_rural
-
+    return df, weather_text, highway, speed_limit, hour, nearby_cluster, urban_rural, traffic_level, traffic_reason
 # ==========================
 # Home Page
 # ==========================
@@ -198,7 +217,7 @@ def predict():
         data = request.json
         lat = float(data["latitude"])
         lon = float(data["longitude"])
-        features, weather_text, highway, speed_limit, hour, nearby_cluster, urban_rural = generate_features(lat, lon)
+        features, weather_text, highway, speed_limit, hour, nearby_cluster, urban_rural, traffic_level, traffic_reason = generate_features(lat, lon)
         prediction = model.predict(features)
         risk_level = label_encoder.inverse_transform(prediction)[0]
 
@@ -225,7 +244,8 @@ def predict():
     "speed_limit": speed_limit,
     "time": hour,
     "signals": nearby_cluster,
-    "area": "Urban" if urban_rural == 1 else "Rural"
+    "area": "Urban" if urban_rural == 1 else "Rural",
+    "traffic": f"{traffic_level} ({traffic_reason})"
 })
 
     except Exception as e:
