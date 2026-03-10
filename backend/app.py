@@ -28,7 +28,7 @@ API_KEY = os.environ.get("API_KEY")  # <-- Use environment variable
 # ==========================
 def get_weather(lat, lon):
     try:
-        url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}"
+        url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}&units=metric"
         response = requests.get(url)
         data = response.json()
         weather = data["weather"][0]["main"]
@@ -204,11 +204,11 @@ def predict():
 
         # Safety suggestions
         if risk_level == "High":
-            solution = "High accident risk. Reduce speed and increase traffic monitoring."
+            solution = "High accident risk. Drive safely in this area. Reduce speed and increase traffic monitoring."
         elif risk_level == "Medium":
             solution = "Moderate risk area. Install warning signs and maintain road visibility."
         else:
-            solution = "Low accident risk. Continue regular safety monitoring."
+            solution = "Road conditions appear relatively safe. Continue regular safety monitoring."
 
         return jsonify({
             "risk_level": risk_level,   # <-- FIXED JSON key
