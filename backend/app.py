@@ -158,7 +158,7 @@ def generate_features(lat, lon):
         if pedestrian_ratio >= 0.3:
             reason.append("more pedestrians")
         if motorcycle_ratio >= 0.5:
-            reason.append("many motorcycles")'
+            reason.append("many motorcycles")
         if heavy_ratio >= 0.3:
             reason.append("heavy vehicles present")
     traffic_reason = ", ".join(reason) if reason else "normal traffic mix"
