@@ -48,8 +48,8 @@ def get_weather(lat, lon):
 
         return weather_map.get(weather, 1), f"{temperature}°C | {weather}"
 
-    except:
-    return 1, "Weather unavailable"
+    except Exception as e:
+        return 1, "Weather unavailable"
 
 # ==========================
 # Get Road Features (Overpass API)
