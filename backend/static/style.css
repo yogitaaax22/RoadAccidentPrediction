@@ -24,6 +24,7 @@ padding:25px;
 margin-top:20px;
 border-radius:10px;
 box-shadow:0 0 10px gray;
+position:relative;
 
 }
 
@@ -65,5 +66,46 @@ border-radius:8px;
 
 height:500px;
 margin-top:30px;
+
+}
+
+/* -------- NEW: Autocomplete Suggestions -------- */
+
+#suggestions{
+
+list-style:none;
+padding:0;
+margin:0;
+background:white;
+border:1px solid #ddd;
+max-height:150px;
+overflow-y:auto;
+position:absolute;
+width:calc(100% - 50px);
+z-index:1000;
+
+}
+
+#suggestions li{
+
+padding:10px;
+cursor:pointer;
+border-bottom:1px solid #eee;
+
+}
+
+#suggestions li:hover{
+
+background:#f1f5f9;
+
+}
+
+/* -------- NEW: Weather display -------- */
+
+#weather{
+
+font-weight:bold;
+margin-bottom:10px;
+color:#1e40af;
 
 }
