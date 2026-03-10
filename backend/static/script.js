@@ -165,7 +165,7 @@ function predictRisk(){
         document.getElementById("weather").innerHTML = data.weather;
         document.getElementById("factors").innerHTML =
 "Speed Limit: " + data.speed_limit + " km/h<br>" +
-"Time of Day: " + data.time_of_day + ":00<br>" +
+"Time of Day: " + data.time_of_day + "<br>" +
 "Road Type: " + data.road_type + "<br>" +
 "Nearby Traffic Signals: " + data.signals + "<br>" +
 "Area Type: " + data.area + "<br>" +
