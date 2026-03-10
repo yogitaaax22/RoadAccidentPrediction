@@ -1,12 +1,13 @@
 let map = L.map('map').setView([20.5937, 78.9629], 5)
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+
 maxZoom:19
+
 }).addTo(map)
 
 let marker
 
-/* Map Click to Select Location */
 
 map.on("click", function(e){
 
@@ -25,38 +26,7 @@ marker = L.marker([lat,lon]).addTo(map)
 })
 
 
-/* SEARCH LOCATION BUTTON (YOUR ORIGINAL FUNCTION) */
-
-function searchLocation(){
-
-let location = document.getElementById("location").value
-
-fetch("https://nominatim.openstreetmap.org/search?format=json&q="+location)
-
-.then(res=>res.json())
-
-.then(data=>{
-
-let lat = data[0].lat
-let lon = data[0].lon
-
-document.getElementById("lat").value = lat
-document.getElementById("lon").value = lon
-
-map.setView([lat,lon],12)
-
-if(marker){
-map.removeLayer(marker)
-}
-
-marker = L.marker([lat,lon]).addTo(map)
-
-})
-
-}
-
-
-/* AUTOCOMPLETE SUGGESTIONS (NEW FEATURE) */
+/* AUTOCOMPLETE DROPDOWN (NEW ADDITION) */
 
 let locationInput = document.getElementById("location")
 let suggestionBox = document.getElementById("suggestions")
@@ -111,12 +81,39 @@ suggestionBox.appendChild(li)
 })
 
 
-/* WEATHER FUNCTION (NEW FEATURE) */
+function searchLocation(){
 
-function getWeather(){
+let location = document.getElementById("location").value
 
-let lat = document.getElementById("lat").value
-let lon = document.getElementById("lon").value
+fetch("https://nominatim.openstreetmap.org/search?format=json&q="+location)
+
+.then(res=>res.json())
+
+.then(data=>{
+
+let lat = data[0].lat
+let lon = data[0].lon
+
+document.getElementById("lat").value = lat
+document.getElementById("lon").value = lon
+
+
+map.setView([lat,lon],12)
+
+if(marker){
+map.removeLayer(marker)
+}
+
+marker = L.marker([lat,lon]).addTo(map)
+
+})
+
+}
+
+
+/* WEATHER FUNCTION (NEW ADDITION) */
+
+function getWeather(lat,lon){
 
 let apiKey = "YOUR_OPENWEATHER_API_KEY"
 
@@ -127,14 +124,12 @@ fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&app
 .then(data=>{
 
 document.getElementById("weather").innerHTML =
-"Temperature: " + data.main.temp + "°C , Condition: " + data.weather[0].main
+"Temperature: " + data.main.temp + "°C | Condition: " + data.weather[0].main
 
 })
 
 }
 
-
-/* ML MODEL PREDICTION (YOUR ORIGINAL BACKEND CALL) */
 
 function predictRisk(){
 
@@ -142,6 +137,12 @@ let lat = document.getElementById("lat").value
 let lon = document.getElementById("lon").value
 
 document.getElementById("risk").innerHTML = "Predicting..."
+
+
+/* CALL WEATHER AUTOMATICALLY */
+
+getWeather(lat,lon)
+
 
 fetch("/predict",{
 
