@@ -121,7 +121,7 @@ def map_road_type(highway):
 # ==========================
 def generate_features(lat, lon):
     ist = pytz.timezone("Asia/Kolkata")
-    now = datetime.now(ist)
+    current_time = datetime.now(ist)
     hour = current_time.hour
     if 5 <= hour < 12:
         time_of_day = "Morning"
@@ -132,7 +132,6 @@ def generate_features(lat, lon):
     else:
         time_of_day = "Night"
     
-    hour = now.hour
     is_night = 1 if (hour >= 20 or hour <= 5) else 0
     weather, weather_text = get_weather(lat, lon)
 
@@ -207,8 +206,7 @@ def generate_features(lat, lon):
     df = pd.DataFrame([data])
     df = pd.get_dummies(df)
     df = df.reindex(columns=model_columns, fill_value=0)
-    return df, weather_text, highway, speed_limit, hour, nearby_cluster, urban_rural, traffic_level, traffic_reason
-# ==========================
+    return df, weather_text, highway, speed_limit, time_of_day, nearby_cluster, urban_rural, traffic_level, traffic_reason
 # Home Page
 # ==========================
 @app.route("/")
@@ -224,7 +222,7 @@ def predict():
         data = request.json
         lat = float(data["latitude"])
         lon = float(data["longitude"])
-        features, weather_text, highway, speed_limit, hour, nearby_cluster, urban_rural, traffic_level, traffic_reason = generate_features(lat, lon)
+        features, weather_text, highway, speed_limit, time_of_day, nearby_cluster, urban_rural, traffic_level, traffic_reason = generate_features(lat, lon)
         prediction = model.predict(features)
         risk_level = label_encoder.inverse_transform(prediction)[0]
 
