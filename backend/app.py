@@ -33,7 +33,6 @@ def get_weather(lat, lon):
         response = requests.get(url)
         data = response.json()
         weather = data["weather"][0]["main"]
-        weather = data["weather"][0]["main"]
         temperature = data["main"]["temp"]
 
         weather_map = {
@@ -50,7 +49,7 @@ def get_weather(lat, lon):
         return weather_map.get(weather, 1), f"{temperature}°C | {weather}"
 
     except:
-        return 1
+    return 1, "Weather unavailable"
 
 # ==========================
 # Get Road Features (Overpass API)
