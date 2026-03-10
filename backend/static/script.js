@@ -163,6 +163,7 @@ function predictRisk(){
     .then(data=>{
         document.getElementById("risk").innerHTML = data.risk_level;
         document.getElementById("weather").innerHTML = data.weather;
+        document.getElementById("factors").innerHTML = data.factors.join("<br>")
         document.getElementById("solution").innerHTML = data.solution; 
     })
     .catch(err => {
