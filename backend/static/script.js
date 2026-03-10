@@ -92,6 +92,11 @@ fetch("https://nominatim.openstreetmap.org/search?format=json&q="+location)
 
 .then(data=>{
 
+if(data.length === 0){
+alert("Location not found")
+return
+}
+
 let lat=data[0].lat
 let lon=data[0].lon
 
@@ -112,24 +117,24 @@ marker=L.marker([lat,lon]).addTo(map)
 
 /* WEATHER */
 
-function getWeather(lat,lon){
+// function getWeather(lat,lon){
 
-let apiKey="API_KEY"
+// let apiKey="API_KEY"
 
-fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
+// fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
 
-.then(res=>res.json())
+// .then(res=>res.json())
 
-.then(data=>{
+// .then(data=>{
 
-if(document.getElementById("weather")){
-document.getElementById("weather").innerHTML=
-"Temperature: "+data.main.temp+"°C | Condition: "+data.weather[0].main
-}
+// if(document.getElementById("weather")){
+// document.getElementById("weather").innerHTML=
+// "Temperature: "+data.main.temp+"°C | Condition: "+data.weather[0].main
+// }
 
-})
+// })
 
-}
+// }
 
 /* PREDICT */
 
@@ -140,7 +145,7 @@ let lon=document.getElementById("lon").value
 
 document.getElementById("risk").innerHTML="Predicting..."
 
-getWeather(lat,lon)
+// getWeather(lat,lon)
 
 fetch("/predict",{
 
