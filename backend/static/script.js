@@ -119,7 +119,7 @@ marker = L.marker([lat,lon]).addTo(map)
 
 function getWeather(lat,lon){
 
-let apiKey = "YOUR_OPENWEATHER_API_KEY"
+let apiKey = "API_KEY"
 
 fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
 
