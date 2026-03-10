@@ -32,6 +32,8 @@ def get_weather(lat, lon):
         response = requests.get(url)
         data = response.json()
         weather = data["weather"][0]["main"]
+        weather = data["weather"][0]["main"]
+        temperature = data["main"]["temp"]
 
         weather_map = {
             "Clear": 1,
@@ -44,7 +46,7 @@ def get_weather(lat, lon):
             "Haze": 5
         }
 
-        return weather_map.get(weather, 1)
+        return weather_map.get(weather, 1), f"{temperature}°C | {weather}"
 
     except:
         return 1
@@ -120,7 +122,7 @@ def generate_features(lat, lon):
     now = datetime.now()
     hour = now.hour
     is_night = 1 if (hour >= 20 or hour <= 5) else 0
-    weather = get_weather(lat, lon)
+    weather, weather_text = get_weather(lat, lon)
 
     # Fetch road data
     highway, speed_limit = get_road_data(lat, lon)
@@ -178,7 +180,7 @@ def generate_features(lat, lon):
     df = pd.DataFrame([data])
     df = pd.get_dummies(df)
     df = df.reindex(columns=model_columns, fill_value=0)
-    return df
+    return df, weather_text
 
 # ==========================
 # Home Page
@@ -196,20 +198,21 @@ def predict():
         data = request.json
         lat = float(data["latitude"])
         lon = float(data["longitude"])
-        features = generate_features(lat, lon)
+        features, weather_text = generate_features(lat, lon)
         prediction = model.predict(features)
         risk_level = label_encoder.inverse_transform(prediction)[0]
 
         # Safety suggestions
         if risk_level == "High":
-            solution = "Install speed breakers, warning signs, improve lighting and traffic monitoring."
+            solution = "High accident risk. Reduce speed and increase traffic monitoring."
         elif risk_level == "Medium":
-            solution = "Add caution boards and monitor traffic conditions."
+            solution = "Moderate risk area. Install warning signs and maintain road visibility."
         else:
-            solution = "Road conditions appear relatively safe."
+            solution = "Low accident risk. Continue regular safety monitoring."
 
         return jsonify({
             "risk_level": risk_level,   # <-- FIXED JSON key
+            "weather": weather_text,
             "solution": solution
         })
 
