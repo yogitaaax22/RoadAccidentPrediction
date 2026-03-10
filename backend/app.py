@@ -162,7 +162,6 @@ def generate_features(lat, lon):
         if heavy_ratio >= 0.3:
             reason.append("heavy vehicles present")
     traffic_reason = ", ".join(reason) if reason else "normal traffic mix"
-
     # Derived Features
     lat_lon_interaction = lat * lon
     lat_squared = lat ** 2
