@@ -180,7 +180,7 @@ def generate_features(lat, lon):
     df = pd.DataFrame([data])
     df = pd.get_dummies(df)
     df = df.reindex(columns=model_columns, fill_value=0)
-    return df, weather_text
+    return df, weather_text, highway, speed_limit, hour, nearby_cluster, urban_rural
 
 # ==========================
 # Home Page
@@ -198,7 +198,7 @@ def predict():
         data = request.json
         lat = float(data["latitude"])
         lon = float(data["longitude"])
-        features, weather_text = generate_features(lat, lon)
+        features, weather_text, highway, speed_limit, hour, nearby_cluster, urban_rural = generate_features(lat, lon)
         prediction = model.predict(features)
         risk_level = label_encoder.inverse_transform(prediction)[0]
 
@@ -210,22 +210,23 @@ def predict():
         else:
             solution = "Road conditions appear relatively safe. Continue regular safety monitoring."
 
-factors = [
-    "Weather conditions",
-    "Road type and speed limit",
-    "Time of day and lighting conditions",
-    "Traffic composition (heavy vehicles, motorcycles, pedestrians)",
-    "Road surface conditions",
-    "Nearby intersections and traffic signals",
-    "Geographic location patterns"
-]
+        # return jsonify({
+        #     "risk_level": risk_level,   # <-- FIXED JSON key
+        #     "weather": weather_text,
+        #     "solution": solution,
+        #     "factors": factors
+        # })
         
         return jsonify({
-            "risk_level": risk_level,   # <-- FIXED JSON key
-            "weather": weather_text,
-            "solution": solution,
-            "factors": factors
-        })
+    "risk_level": risk_level,
+    "weather": weather_text,
+    "solution": solution,
+    "road_type": highway,
+    "speed_limit": speed_limit,
+    "time": hour,
+    "signals": nearby_cluster,
+    "area": "Urban" if urban_rural == 1 else "Rural"
+})
 
     except Exception as e:
         return jsonify({
