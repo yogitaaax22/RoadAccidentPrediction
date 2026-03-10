@@ -1,13 +1,10 @@
 let map = L.map('map').setView([20.5937, 78.9629], 5)
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-
 maxZoom:19
-
 }).addTo(map)
 
 let marker
-
 
 map.on("click", function(e){
 
@@ -25,13 +22,13 @@ marker = L.marker([lat,lon]).addTo(map)
 
 })
 
-
-/* ---------- NEW: AUTOCOMPLETE DROPDOWN ---------- */
+/* AUTOCOMPLETE */
 
 let locationInput = document.getElementById("location")
 let suggestionBox = document.getElementById("suggestions")
 
 if(locationInput){
+
 locationInput.addEventListener("input", function(){
 
 let query = this.value
@@ -51,15 +48,15 @@ suggestionBox.innerHTML=""
 
 data.forEach(place=>{
 
-let li = document.createElement("li")
+let li=document.createElement("li")
 
-li.textContent = place.display_name
+li.textContent=place.display_name
 
-li.onclick = function(){
+li.onclick=function(){
 
-document.getElementById("location").value = place.display_name
-document.getElementById("lat").value = place.lat
-document.getElementById("lon").value = place.lon
+document.getElementById("location").value=place.display_name
+document.getElementById("lat").value=place.lat
+document.getElementById("lon").value=place.lon
 
 map.setView([place.lat,place.lon],12)
 
@@ -67,7 +64,7 @@ if(marker){
 map.removeLayer(marker)
 }
 
-marker = L.marker([place.lat,place.lon]).addTo(map)
+marker=L.marker([place.lat,place.lon]).addTo(map)
 
 suggestionBox.innerHTML=""
 
@@ -80,14 +77,14 @@ suggestionBox.appendChild(li)
 })
 
 })
+
 }
 
-
-/* ---------- YOUR ORIGINAL SEARCH FUNCTION ---------- */
+/* SEARCH LOCATION */
 
 function searchLocation(){
 
-let location = document.getElementById("location").value
+let location=document.getElementById("location").value
 
 fetch("https://nominatim.openstreetmap.org/search?format=json&q="+location)
 
@@ -95,12 +92,11 @@ fetch("https://nominatim.openstreetmap.org/search?format=json&q="+location)
 
 .then(data=>{
 
-let lat = data[0].lat
-let lon = data[0].lon
+let lat=data[0].lat
+let lon=data[0].lon
 
-document.getElementById("lat").value = lat
-document.getElementById("lon").value = lon
-
+document.getElementById("lat").value=lat
+document.getElementById("lon").value=lon
 
 map.setView([lat,lon],12)
 
@@ -108,18 +104,17 @@ if(marker){
 map.removeLayer(marker)
 }
 
-marker = L.marker([lat,lon]).addTo(map)
+marker=L.marker([lat,lon]).addTo(map)
 
 })
 
 }
 
-
-/* ---------- NEW: WEATHER FUNCTION ---------- */
+/* WEATHER */
 
 function getWeather(lat,lon){
 
-let apiKey = "API_KEY"
+let apiKey="API_KEY"
 
 fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
 
@@ -128,53 +123,65 @@ fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&app
 .then(data=>{
 
 if(document.getElementById("weather")){
-document.getElementById("weather").innerHTML =
-"Temperature: " + data.main.temp + "°C | Condition: " + data.weather[0].main
+document.getElementById("weather").innerHTML=
+"Temperature: "+data.main.temp+"°C | Condition: "+data.weather[0].main
 }
 
 })
 
 }
 
-
-/* ---------- YOUR ORIGINAL PREDICT FUNCTION (ONLY 1 EXTRA LINE) ---------- */
+/* PREDICT */
 
 function predictRisk(){
 
-    let lat = document.getElementById("lat").value
-    let lon = document.getElementById("lon").value
+let lat=document.getElementById("lat").value
+let lon=document.getElementById("lon").value
 
-    document.getElementById("risk").innerHTML = "Predicting..."
+document.getElementById("risk").innerHTML="Predicting..."
 
-    /* NEW: fetch weather automatically */
-    getWeather(lat,lon)
+getWeather(lat,lon)
 
-    fetch("/predict",{
-        method:"POST",
-        headers:{
-            "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-            latitude: parseFloat(lat),
-            longitude: parseFloat(lon)
-        })
-    })
-    .then(res=>res.json())
-    .then(data=>{
-        document.getElementById("risk").innerHTML = data.risk_level;
-        document.getElementById("weather").innerHTML = data.weather;
-        document.getElementById("factors").innerHTML =
-"Speed Limit: " + data.speed_limit + " km/h<br>" +
-"Time of Day: " + data.time_of_day + "<br>" +
-"Road Type: " + data.road_type + "<br>" +
-"Nearby Traffic Signals: " + data.signals + "<br>" +
-"Area Type: " + data.area + "<br>" +
-"Traffic Composition: " + data.traffic;
-        
-        document.getElementById("solution").innerHTML = data.solution; 
-    })
-    .catch(err => {
-        console.error("Error:", err);
-        document.getElementById("risk").innerHTML = "Error predicting risk.";
-    });
+fetch("/predict",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+latitude:parseFloat(lat),
+longitude:parseFloat(lon)
+})
+
+})
+
+.then(res=>res.json())
+
+.then(data=>{
+
+document.getElementById("risk").innerHTML=data.risk_level
+document.getElementById("weather").innerHTML=data.weather
+
+document.getElementById("factors").innerHTML=
+"Speed Limit: "+data.speed_limit+" km/h<br>"+
+"Time of Day: "+data.time_of_day+"<br>"+
+"Road Type: "+data.road_type+"<br>"+
+"Nearby Traffic Signals: "+data.signals+"<br>"+
+"Area Type: "+data.area+"<br>"+
+"Traffic Composition: "+data.traffic
+
+document.getElementById("solution").innerHTML=data.solution
+
+})
+
+.catch(err=>{
+
+console.error("Error:",err)
+
+document.getElementById("risk").innerHTML="Error predicting risk."
+
+})
+
 }
