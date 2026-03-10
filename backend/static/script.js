@@ -26,6 +26,65 @@ marker = L.marker([lat,lon]).addTo(map)
 })
 
 
+/* ---------- NEW: AUTOCOMPLETE DROPDOWN ---------- */
+
+let locationInput = document.getElementById("location")
+let suggestionBox = document.getElementById("suggestions")
+
+if(locationInput){
+locationInput.addEventListener("input", function(){
+
+let query = this.value
+
+if(query.length < 3){
+suggestionBox.innerHTML = ""
+return
+}
+
+fetch("https://nominatim.openstreetmap.org/search?format=json&q="+query)
+
+.then(res=>res.json())
+
+.then(data=>{
+
+suggestionBox.innerHTML=""
+
+data.forEach(place=>{
+
+let li = document.createElement("li")
+
+li.textContent = place.display_name
+
+li.onclick = function(){
+
+document.getElementById("location").value = place.display_name
+document.getElementById("lat").value = place.lat
+document.getElementById("lon").value = place.lon
+
+map.setView([place.lat,place.lon],12)
+
+if(marker){
+map.removeLayer(marker)
+}
+
+marker = L.marker([place.lat,place.lon]).addTo(map)
+
+suggestionBox.innerHTML=""
+
+}
+
+suggestionBox.appendChild(li)
+
+})
+
+})
+
+})
+}
+
+
+/* ---------- YOUR ORIGINAL SEARCH FUNCTION ---------- */
+
 function searchLocation(){
 
 let location = document.getElementById("location").value
@@ -56,11 +115,39 @@ marker = L.marker([lat,lon]).addTo(map)
 }
 
 
+/* ---------- NEW: WEATHER FUNCTION ---------- */
+
+function getWeather(lat,lon){
+
+let apiKey = "YOUR_OPENWEATHER_API_KEY"
+
+fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`)
+
+.then(res=>res.json())
+
+.then(data=>{
+
+if(document.getElementById("weather")){
+document.getElementById("weather").innerHTML =
+"Temperature: " + data.main.temp + "°C | Condition: " + data.weather[0].main
+}
+
+})
+
+}
+
+
+/* ---------- YOUR ORIGINAL PREDICT FUNCTION (ONLY 1 EXTRA LINE) ---------- */
+
 function predictRisk(){
+
     let lat = document.getElementById("lat").value
     let lon = document.getElementById("lon").value
 
     document.getElementById("risk").innerHTML = "Predicting..."
+
+    /* NEW: fetch weather automatically */
+    getWeather(lat,lon)
 
     fetch("/predict",{
         method:"POST",
@@ -74,11 +161,7 @@ function predictRisk(){
     })
     .then(res=>res.json())
     .then(data=>{
-        // CHANGED: Match the key 'risk_level' from your Python code
         document.getElementById("risk").innerHTML = data.risk_level;
-        
-        // NOTE: Your current app.py doesn't send a 'solution' key yet.
-        // You might want to add that to your Python return or just show the risk.
         document.getElementById("solution").innerHTML = "Drive safely in this area."; 
     })
     .catch(err => {
