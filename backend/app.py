@@ -210,10 +210,21 @@ def predict():
         else:
             solution = "Road conditions appear relatively safe. Continue regular safety monitoring."
 
+factors = [
+    "Weather conditions",
+    "Road type and speed limit",
+    "Time of day and lighting conditions",
+    "Traffic composition (heavy vehicles, motorcycles, pedestrians)",
+    "Road surface conditions",
+    "Nearby intersections and traffic signals",
+    "Geographic location patterns"
+]
+        
         return jsonify({
             "risk_level": risk_level,   # <-- FIXED JSON key
             "weather": weather_text,
-            "solution": solution
+            "solution": solution,
+            "factors": factors
         })
 
     except Exception as e:
