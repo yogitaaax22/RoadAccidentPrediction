@@ -147,24 +147,21 @@ def generate_features(lat, lon):
     motorcycle_ratio = 0.5 if urban_rural == 1 else 0.3
     pedestrian_ratio = 0.3 if urban_rural == 1 else 0.1
     road_surface = 1
-
-traffic_score = heavy_ratio + motorcycle_ratio + pedestrian_ratio
-if traffic_score >= 0.9:
-    traffic_level = "High"
-elif traffic_score >= 0.6:
-    traffic_level = "Medium"
-else:
-    traffic_level = "Low"
-
-reason = []
-if pedestrian_ratio >= 0.3:
-    reason.append("more pedestrians")
-if motorcycle_ratio >= 0.5:
-    reason.append("many motorcycles")
-if heavy_ratio >= 0.3:
-    reason.append("heavy vehicles present")
-
-traffic_reason = ", ".join(reason) if reason else "normal traffic mix"
+    traffic_score = heavy_ratio + motorcycle_ratio + pedestrian_ratio
+    if traffic_score >= 0.9:
+        traffic_level = "High"
+    elif traffic_score >= 0.6:
+        traffic_level = "Medium"
+    else:
+        traffic_level = "Low"
+        reason = []
+        if pedestrian_ratio >= 0.3:
+            reason.append("more pedestrians")
+        if motorcycle_ratio >= 0.5:
+            reason.append("many motorcycles")'
+        if heavy_ratio >= 0.3:
+            reason.append("heavy vehicles present")
+    traffic_reason = ", ".join(reason) if reason else "normal traffic mix"
 
     # Derived Features
     lat_lon_interaction = lat * lon
