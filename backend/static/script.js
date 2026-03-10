@@ -164,11 +164,12 @@ function predictRisk(){
         document.getElementById("risk").innerHTML = data.risk_level;
         document.getElementById("weather").innerHTML = data.weather;
         document.getElementById("factors").innerHTML =
-"Road Type: " + data.road_type + "<br>" +
 "Speed Limit: " + data.speed_limit + " km/h<br>" +
 "Time of Day: " + data.time + ":00<br>" +
+"Road Type: " + data.road_type + "<br>" +
 "Nearby Traffic Signals: " + data.signals + "<br>" +
-"Area Type: " + data.area;
+"Area Type: " + data.area + "<br>" +
+"Traffic Composition: " + data.traffic;
         
         document.getElementById("solution").innerHTML = data.solution; 
     })
