@@ -20,7 +20,13 @@
 
 <h2>Enter Location</h2>
 
-<input type="text" id="location" placeholder="Enter city or road name">
+<div class="autocomplete">
+
+<input type="text" id="location" placeholder="Type city or road">
+
+<ul id="suggestions"></ul>
+
+</div>
 <button onclick="searchLocation()">Search Location</button>
 
 <br><br>
@@ -31,16 +37,21 @@
 <label>Longitude</label>
 <input type="text" id="lon">
 
+<button onclick="getWeather()">Check Weather</button>
 <button onclick="predictRisk()">Predict Accident Risk</button>
 
-<div class="result">
+<div class="info">
+
+<h3>Weather</h3>
+<p id="weather"></p>
+
 <h3>Risk Level</h3>
 <p id="risk"></p>
 
 <h3>Suggested Safety Measures</h3>
 <p id="solution"></p>
-</div>
 
+</div>
 </div>
 
 <div id="map" style="height:500px;"></div>
