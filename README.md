@@ -53,5 +53,7 @@ Location coordinates
 
 FUTURE IMPROVEMENTS
 -Integration with GPS navigation apps for safer route suggestions eg Google Maps
+
 -Real-time traffic and weather data integration
+
 -City-wide risk heatmaps for authorities
