@@ -30,18 +30,22 @@ FEATURES
 🌍 Real-world applicability for cities, logistics companies, and drivers
 
 TECH STACK-
+
 Programming & Backend-
 Python
 Flask
+
 Machine Learning-
 Scikit-learn
 Pandas
 NumPy
+
 Frontend-
 HTML
 CSS
 JavaScript
 Leaflet.js (for map interaction)
+
 Data Sources-
 Historical accident datasets
 Weather data
