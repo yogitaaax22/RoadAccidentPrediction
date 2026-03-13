@@ -19,9 +19,13 @@ Preventive safety measures
 
 FEATURES
 📍 Interactive Map Interface – Select any location to analyze accident risk
+
 🤖 Machine Learning Model – Predicts accident probability using trained models
+
 🌦 Multiple Data Factors – Includes past accidents, weather, traffic patterns, etc.
+
 📊 Risk Score Output – Provides an easy-to-understand risk level
+
 🌍 Real-world applicability for cities, logistics companies, and drivers
 
 TECH STACK-
