@@ -18,6 +18,7 @@ Data-driven decision making
 Preventive safety measures
 
 FEATURES
+
 📍 Interactive Map Interface – Select any location to analyze accident risk
 
 🤖 Machine Learning Model – Predicts accident probability using trained models
